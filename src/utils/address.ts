@@ -13,7 +13,7 @@ export function extractAddress(text: string): string | null {
   if (!match) return null;
 
   const raw = match[0];
-  if (!isAddress(raw)) return null;
+  if (!isAddress(raw, { strict: false })) return null;
 
   try {
     return getAddress(raw); // checksummed

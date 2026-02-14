@@ -53,8 +53,14 @@ export function computeRiskScore(data: WalletData): {
   signals.push(tokenSignal);
 
   // Weighted total
+  // Boost when multiple independent scam reports exist — a single max-weight
+  // signal (0.25 × 100 = 25) can't alone push past the HIGH threshold,
+  // but 2+ corroborating flags from different sources are a strong indicator.
+  const scamBoost =
+    data.scamFlags.length >= 3 ? 15 : data.scamFlags.length >= 2 ? 10 : 0;
+
   const score = Math.round(
-    signals.reduce((sum, s) => sum + s.score * s.weight, 0),
+    signals.reduce((sum, s) => sum + s.score * s.weight, 0) + scamBoost,
   );
   const clampedScore = Math.max(0, Math.min(100, score));
 
