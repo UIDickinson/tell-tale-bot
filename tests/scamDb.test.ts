@@ -3,6 +3,7 @@
 // ============================================================
 
 import { seedLocalDb, checkAddress, batchCheckLocal, getLocalDbSize } from '../src/services/scamDb';
+import { knownContracts } from '../src/data/knownContracts';
 
 // Reset the module-level Map between tests
 beforeEach(() => {
@@ -84,6 +85,16 @@ describe('batchCheckLocal', () => {
 
   it('handles empty input', () => {
     const results = batchCheckLocal([]);
+    expect(results.size).toBe(0);
+  });
+
+  it('skips whitelisted addresses even if they appear in scam DB', () => {
+    // Seed a whitelisted address (Uniswap Router) into the DB as a scam
+    seedLocalDb([
+      { address: '0x3fc91a3afd70395cd496c647d5a6cc9d4b2b7fad', category: 'drainer', description: 'Test false positive' },
+    ]);
+    // batchCheckLocal should NOT return it because it's whitelisted
+    const results = batchCheckLocal(['0x3fc91a3afd70395cd496c647d5a6cc9d4b2b7fad']);
     expect(results.size).toBe(0);
   });
 });

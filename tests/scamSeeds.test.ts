@@ -29,7 +29,7 @@ describe('scamSeedData', () => {
   });
 
   it('has recognized categories', () => {
-    const validCategories = ['burn', 'drainer', 'phishing', 'rugpull', 'mixer', 'exploiter', 'scam'];
+    const validCategories = ['burn', 'mixer', 'scam'];
     for (const entry of scamSeedData) {
       expect(validCategories).toContain(entry.category);
     }
@@ -40,9 +40,14 @@ describe('scamSeedData', () => {
     expect(mixers.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('contains drainer kit addresses', () => {
-    const drainers = scamSeedData.filter(e => e.category === 'drainer');
-    expect(drainers.length).toBeGreaterThanOrEqual(1);
+  it('does not contain known false positives', () => {
+    const addresses = scamSeedData.map(e => e.address.toLowerCase());
+    // Uniswap UniversalRouter must NOT be in scam DB
+    expect(addresses).not.toContain('0x3fc91a3afd70395cd496c647d5a6cc9d4b2b7fad');
+    // USDC template must NOT be in scam DB
+    expect(addresses).not.toContain('0xb0b86991c6218b36c1d19d4a2e9eb0ce3606eb48');
+    // Placeholder rugpull must NOT be in scam DB
+    expect(addresses).not.toContain('0xdeaddeaddeaddeaddeaddeaddeaddeaddead0001');
   });
 
   it('has no duplicate addresses', () => {

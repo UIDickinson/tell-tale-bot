@@ -8,6 +8,7 @@
 
 import axios from 'axios';
 import { ScamFlag } from '../types/index.js';
+import { isWhitelisted } from '../data/knownContracts.js';
 
 /**
  * Local scam address set — loaded from seed data at startup.
@@ -67,6 +68,9 @@ export async function checkAddress(address: string): Promise<ScamFlag[]> {
 export function batchCheckLocal(addresses: string[]): Map<string, ScamFlag> {
   const results = new Map<string, ScamFlag>();
   for (const addr of addresses) {
+    // Skip known-good contracts (Uniswap, USDC, bridges, etc.)
+    if (isWhitelisted(addr)) continue;
+
     const match = localScamDb.get(addr.toLowerCase());
     if (match) {
       results.set(addr, {

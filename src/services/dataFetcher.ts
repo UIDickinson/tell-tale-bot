@@ -70,6 +70,7 @@ export async function fetchWalletData(address: string): Promise<WalletData> {
     contractCheck,
     scamFlags,
     firstTx,
+    totalTxCount,
   ] = await Promise.allSettled([
     basescan.getTransactions(address),
     basescan.getInternalTransactions(address),
@@ -78,6 +79,7 @@ export async function fetchWalletData(address: string): Promise<WalletData> {
     fetchIsContractWithFallback(address, hexAddress),
     scamDb.checkAddress(address),
     basescan.getFirstTransaction(address),
+    basescan.getTransactionCount(address),
   ]);
 
   // Extract results with safe defaults
@@ -88,6 +90,7 @@ export async function fetchWalletData(address: string): Promise<WalletData> {
   const isContractAddr = contractCheck.status === 'fulfilled' ? contractCheck.value : false;
   const flags = scamFlags.status === 'fulfilled' ? scamFlags.value : [];
   const firstTransaction = firstTx.status === 'fulfilled' ? firstTx.value : null;
+  const trueTxCount = totalTxCount.status === 'fulfilled' ? totalTxCount.value : null;
 
   // Check interacted addresses against local scam DB
   const interactedAddresses = [
@@ -134,12 +137,15 @@ export async function fetchWalletData(address: string): Promise<WalletData> {
     : null;
 
   const elapsed = Date.now() - startTime;
-  console.log(`[DataFetcher] Fetched data for ${address} in ${elapsed}ms (${txs.length} txs, ${tokenTxs.length} token txs, ${flags.length} flags)`);
+  // Use the true transaction count from Blockscout counters when available;
+  // fall back to the batch size (capped at 100).
+  const transactionCount = trueTxCount ?? txs.length;
+  console.log(`[DataFetcher] Fetched data for ${address} in ${elapsed}ms (${txs.length} txs fetched, ${transactionCount} total, ${tokenTxs.length} token txs, ${flags.length} flags)`);
 
   return {
     address,
     balance: bal,
-    transactionCount: txs.length,
+    transactionCount,
     transactions: txs,
     tokenTransfers: tokenTxs,
     internalTransactions: internalTxs,

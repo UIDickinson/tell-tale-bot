@@ -18,6 +18,7 @@ import {
   RISK_EMOJI,
 } from '../types/index.js';
 import { shortenAddress } from '../utils/address.js';
+import { getContractLabel } from '../data/knownContracts.js';
 
 const openai = new OpenAI({ apiKey: config.openaiApiKey });
 
@@ -235,6 +236,7 @@ function computeTopInteractions(data: WalletData): TopInteraction[] {
     .slice(0, 5)
     .map(([addr, count]) => ({
       address: addr,
+      label: getContractLabel(addr),  // resolve known-contract labels
       txCount: count,
     }));
 }
@@ -293,23 +295,57 @@ function calculateConfidence(data: WalletData): number {
 function generateRecommendations(level: RiskLevel, signals: RiskSignal[]): string[] {
   const recs: string[] = [];
 
-  switch (level) {
-    case 'LOW':
-      recs.push('No significant red flags detected.');
-      recs.push('Standard activity patterns observed.');
-      break;
-    case 'MEDIUM':
-      recs.push('Proceed with caution — verify the wallet through other sources.');
-      recs.push('Avoid large transactions without further due diligence.');
-      break;
-    case 'HIGH':
-      recs.push('Exercise extreme caution — multiple risk indicators present.');
-      recs.push('Do NOT send funds or approve tokens without thorough verification.');
-      recs.push('Consider reporting this address if you believe it is malicious.');
-      break;
+  // Signal-specific recommendations
+  for (const signal of signals) {
+    if (signal.score <= 30) continue; // only flag notable signals
+
+    switch (signal.name) {
+      case 'Account Age':
+        recs.push('Account is very new — new accounts are more frequently associated with scams.');
+        break;
+      case 'Scam Database':
+        recs.push('This address has matches in scam databases — avoid interacting with it.');
+        break;
+      case 'Large Transfers':
+        recs.push('Unusual large transfer patterns detected — could indicate fund draining.');
+        break;
+      case 'Contract Approvals':
+        recs.push('Multiple token approvals detected — review and revoke any unnecessary approvals.');
+        break;
+      case 'Funding Source':
+        recs.push('Funding from flagged sources — funds may originate from illicit activity.');
+        break;
+      case 'Token Diversity':
+        recs.push('Unusually high token diversity — may include airdrop scam tokens.');
+        break;
+    }
   }
 
-  return recs;
+  // General level-based recommendation if no signal-specific ones
+  if (recs.length === 0) {
+    switch (level) {
+      case 'LOW':
+        recs.push('No significant red flags detected. Standard activity patterns observed.');
+        break;
+      case 'MEDIUM':
+        recs.push('Proceed with caution — verify the wallet through other sources.');
+        break;
+      case 'HIGH':
+        recs.push('Exercise extreme caution — multiple risk indicators present.');
+        break;
+    }
+  }
+
+  // Always add action-oriented advice for non-LOW risk
+  if (level === 'MEDIUM' || level === 'HIGH') {
+    recs.push('Avoid large transactions without further due diligence.');
+  }
+  if (level === 'HIGH') {
+    recs.push('Do NOT send funds or approve tokens without thorough verification.');
+    recs.push('Consider reporting this address on ChainAbuse if you believe it is malicious.');
+  }
+
+  return [...new Set(recs)]; // deduplicate
 }
 
 /**

@@ -102,12 +102,12 @@ describe('Integration: Full Analysis Pipeline (offline)', () => {
 
   it('end-to-end: flagged scam address triggers HIGH risk', async () => {
     // Use a known address from our scam seed data
-    const scamAddress = '0x0000db5c8b030ae20308ac975898e09741e70000'; // Inferno Drainer
+    const scamAddress = '0xfbFEE3CD66697758164bFD36e3cA0Ea73480E9a2'; // community-reported scam
 
     // Check scam DB
-    const flags = await checkAddress(scamAddress);
+    const flags = await checkAddress(scamAddress.toLowerCase());
     expect(flags.length).toBeGreaterThanOrEqual(1);
-    expect(flags[0]!.category).toBe('drainer');
+    expect(flags[0]!.category).toBe('scam');
 
     // Build wallet data with the scam flag
     // Add additional corroborating flags to reflect a real-world scenario where

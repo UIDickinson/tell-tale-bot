@@ -171,3 +171,25 @@ export async function getFirstTransaction(
     return null;
   }
 }
+
+/**
+ * Fetch the total transaction count for an address from Blockscout's
+ * address counters endpoint. Returns null if unavailable.
+ */
+export async function getTransactionCount(address: string): Promise<number | null> {
+  try {
+    await rateLimiter.waitForSlot();
+    const response = await axios.get(
+      `https://base.blockscout.com/api/v2/addresses/${address}/counters`,
+      { timeout: 10000 },
+    );
+    const count = response.data?.transactions_count;
+    if (count !== undefined && count !== null) {
+      return parseInt(String(count), 10);
+    }
+    return null;
+  } catch (error) {
+    console.error(`[Basescan] Failed to fetch transaction count for ${address}:`, error);
+    return null;
+  }
+}
