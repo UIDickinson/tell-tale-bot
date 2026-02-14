@@ -23,7 +23,7 @@ describe('config', () => {
   });
 
   it('has Basescan base URL', () => {
-    expect(config.basescanBaseUrl).toBe('https://api.basescan.org/api');
+    expect(config.basescanBaseUrl).toBe('https://base.blockscout.com/api');
   });
 
   it('has RPC providers configured', () => {

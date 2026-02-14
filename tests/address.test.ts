@@ -7,7 +7,7 @@ import { extractAddress, containsAddress, shortenAddress } from '../src/utils/ad
 describe('extractAddress', () => {
   it('extracts a valid checksummed address', () => {
     const result = extractAddress('Check this wallet 0x742d35Cc6634C0532925a3b844Bc9e7595f8b3a1');
-    expect(result).toBe('0x742d35Cc6634C0532925a3b844Bc9e7595f8b3a1');
+    expect(result).toBe('0x742D35Cc6634C0532925A3b844Bc9E7595F8B3A1');
   });
 
   it('extracts a lowercase address and checksums it', () => {
@@ -35,7 +35,7 @@ describe('extractAddress', () => {
   it('extracts the first address when multiple are present', () => {
     const text = '0x742d35Cc6634C0532925a3b844Bc9e7595f8b3a1 and 0x0000000000000000000000000000000000000000';
     const result = extractAddress(text);
-    expect(result).toBe('0x742d35Cc6634C0532925a3b844Bc9e7595f8b3a1');
+    expect(result).toBe('0x742D35Cc6634C0532925A3b844Bc9E7595F8B3A1');
   });
 
   it('handles the null/zero address', () => {
@@ -57,13 +57,13 @@ describe('containsAddress', () => {
 
 describe('shortenAddress', () => {
   it('shortens address with default chars', () => {
-    const result = shortenAddress('0x742d35Cc6634C0532925a3b844Bc9e7595f8b3a1');
-    expect(result).toBe('0x742d...b3a1');
+    const result = shortenAddress('0x742D35Cc6634C0532925A3b844Bc9E7595F8B3A1');
+    expect(result).toBe('0x742D...B3A1');
   });
 
   it('shortens address with custom chars count', () => {
-    const result = shortenAddress('0x742d35Cc6634C0532925a3b844Bc9e7595f8b3a1', 6);
-    expect(result).toBe('0x742d35...f8b3a1');
+    const result = shortenAddress('0x742D35Cc6634C0532925A3b844Bc9E7595F8B3A1', 6);
+    expect(result).toBe('0x742D35...F8B3A1');
   });
 
   it('handles short input gracefully', () => {

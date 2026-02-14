@@ -116,11 +116,11 @@ export const scamSeedData: ScamSeedEntry[] = [
   },
 
   // ── Base-Specific Scam Reports ─────────────────────────────
-  // Add verified scam addresses from Base chain reports here.
-  // Sources:
-  //   - ChainAbuse reports filtered for Base
-  //   - Base community Discord reports
-  //   - Forta alert subscriptions for Base
+  {
+    address: '0xfbFEE3CD66697758164bFD36e3cA0Ea73480E9a2',
+    category: 'scam',
+    description: 'Suspected scam contract on Base — community-reported.',
+  },
 ];
 
 /**

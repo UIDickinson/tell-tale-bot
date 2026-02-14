@@ -57,7 +57,7 @@ export function computeRiskScore(data: WalletData): {
   // signal (0.25 × 100 = 25) can't alone push past the HIGH threshold,
   // but 2+ corroborating flags from different sources are a strong indicator.
   const scamBoost =
-    data.scamFlags.length >= 3 ? 15 : data.scamFlags.length >= 2 ? 10 : 0;
+    data.scamFlags.length >= 3 ? 20 : data.scamFlags.length >= 2 ? 15 : data.scamFlags.length >= 1 ? 10 : 0;
 
   const score = Math.round(
     signals.reduce((sum, s) => sum + s.score * s.weight, 0) + scamBoost,

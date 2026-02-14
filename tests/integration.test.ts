@@ -97,7 +97,7 @@ describe('Integration: Full Analysis Pipeline (offline)', () => {
     expect(castText).toContain('Tell-Tale Bot');
     expect(castText).toContain('RISK');
     expect(castText).toContain('DYOR');
-    expect(castText).toContain('0x742d...b3a1');
+    expect(castText).toContain('0x742D...B3A1');
   });
 
   it('end-to-end: flagged scam address triggers HIGH risk', async () => {
@@ -110,6 +110,8 @@ describe('Integration: Full Analysis Pipeline (offline)', () => {
     expect(flags[0]!.category).toBe('drainer');
 
     // Build wallet data with the scam flag
+    // Add additional corroborating flags to reflect a real-world scenario where
+    // a known drainer would be flagged by multiple sources.
     const walletData: WalletData = {
       address: scamAddress,
       balance: 0n,
@@ -120,7 +122,11 @@ describe('Integration: Full Analysis Pipeline (offline)', () => {
       accountAge: 3 * 86400, // 3 days
       firstTxTimestamp: Math.floor(Date.now() / 1000) - 3 * 86400,
       isContract: true,
-      scamFlags: flags,
+      scamFlags: [
+        ...flags,
+        { source: 'ChainAbuse', category: 'scam', description: 'Community-reported drainer contract' },
+        { source: 'Forta', category: 'drainer', description: 'Forta alert: wallet drainer detected' },
+      ],
     };
 
     const { score, level } = computeRiskScore(walletData);

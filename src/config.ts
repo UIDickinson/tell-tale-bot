@@ -33,9 +33,9 @@ export const config = {
   // OpenAI
   openaiApiKey: requireEnv('OPENAI_API_KEY'),
 
-  // Basescan
-  basescanApiKey: requireEnv('BASESCAN_API_KEY'),
-  basescanBaseUrl: 'https://api.basescan.org/api',
+  // Block Explorer (Blockscout — free, Etherscan-compatible API for Base)
+  basescanApiKey: optionalEnv('BASESCAN_API_KEY', ''),
+  basescanBaseUrl: 'https://base.blockscout.com/api',
   basescanRateLimit: 5, // calls per second
 
   // Base RPC fallback chain (ordered by priority)

@@ -18,11 +18,14 @@ interface BasescanApiResponse<T> {
 async function basescanGet<T>(params: Record<string, string>): Promise<T> {
   await rateLimiter.waitForSlot();
 
+  // Build query params — only include apikey if configured
+  const queryParams: Record<string, string> = { ...params };
+  if (config.basescanApiKey) {
+    queryParams.apikey = config.basescanApiKey;
+  }
+
   const response = await axios.get<BasescanApiResponse<T>>(config.basescanBaseUrl, {
-    params: {
-      ...params,
-      apikey: config.basescanApiKey,
-    },
+    params: queryParams,
     timeout: 10000,
   });
 
@@ -141,5 +144,30 @@ export async function isContract(address: string): Promise<boolean> {
   } catch (error) {
     console.error(`[Basescan] Failed to check contract status for ${address}:`, error);
     return false;
+  }
+}
+
+/**
+ * Fetch the very first transaction for an address (sort=asc, limit=1).
+ * Used to accurately determine account age regardless of total tx count.
+ */
+export async function getFirstTransaction(
+  address: string,
+): Promise<BasescanTransaction | null> {
+  try {
+    const result = await basescanGet<BasescanTransaction[] | string>({
+      module: 'account',
+      action: 'txlist',
+      address,
+      startblock: '0',
+      endblock: '99999999',
+      page: '1',
+      offset: '1',
+      sort: 'asc',
+    });
+    return Array.isArray(result) && result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error(`[Basescan] Failed to fetch first transaction for ${address}:`, error);
+    return null;
   }
 }

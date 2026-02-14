@@ -13,6 +13,47 @@ import * as scamDb from './scamDb.js';
 import { getBalanceViaRpc, isContractViaRpc } from './rpcFallback.js';
 
 /**
+ * Fetch balance: try Basescan first, fall back to RPC if Basescan returns
+ * the zero-default (which it does when the API errors out).
+ */
+async function fetchBalanceWithFallback(
+  address: string,
+  hexAddress: `0x${string}`,
+): Promise<bigint> {
+  const basescanBalance = await basescan.getBalance(address);
+  // basescan.getBalance catches errors internally and returns 0n.
+  // A real zero balance is indistinguishable, so always try RPC as a
+  // cross-check when Basescan returns 0.
+  if (basescanBalance === 0n) {
+    try {
+      return await getBalanceViaRpc(hexAddress);
+    } catch {
+      return basescanBalance;
+    }
+  }
+  return basescanBalance;
+}
+
+/**
+ * Fetch contract status: try Basescan first, fall back to RPC.
+ * Basescan returns false on error, so also check via RPC when false.
+ */
+async function fetchIsContractWithFallback(
+  address: string,
+  hexAddress: `0x${string}`,
+): Promise<boolean> {
+  const basescanResult = await basescan.isContract(address);
+  if (!basescanResult) {
+    try {
+      return await isContractViaRpc(hexAddress);
+    } catch {
+      return basescanResult;
+    }
+  }
+  return basescanResult;
+}
+
+/**
  * Fetch all available data for a wallet address.
  * Parallelizes independent API calls for speed.
  */
@@ -28,13 +69,15 @@ export async function fetchWalletData(address: string): Promise<WalletData> {
     balance,
     contractCheck,
     scamFlags,
+    firstTx,
   ] = await Promise.allSettled([
     basescan.getTransactions(address),
     basescan.getInternalTransactions(address),
     basescan.getTokenTransfers(address),
-    basescan.getBalance(address).catch(() => getBalanceViaRpc(hexAddress)), // Basescan → RPC fallback
-    basescan.isContract(address).catch(() => isContractViaRpc(hexAddress)), // Basescan → RPC fallback
+    fetchBalanceWithFallback(address, hexAddress),
+    fetchIsContractWithFallback(address, hexAddress),
     scamDb.checkAddress(address),
+    basescan.getFirstTransaction(address),
   ]);
 
   // Extract results with safe defaults
@@ -44,6 +87,7 @@ export async function fetchWalletData(address: string): Promise<WalletData> {
   const bal = balance.status === 'fulfilled' ? balance.value : 0n;
   const isContractAddr = contractCheck.status === 'fulfilled' ? contractCheck.value : false;
   const flags = scamFlags.status === 'fulfilled' ? scamFlags.value : [];
+  const firstTransaction = firstTx.status === 'fulfilled' ? firstTx.value : null;
 
   // Check interacted addresses against local scam DB
   const interactedAddresses = [
@@ -64,13 +108,27 @@ export async function fetchWalletData(address: string): Promise<WalletData> {
     });
   }
 
-  // Determine account age from oldest transaction
-  const allTimestamps = [
-    ...txs.map((tx) => parseInt(tx.timeStamp)),
-    ...internalTxs.map((tx) => parseInt(tx.timeStamp)),
-  ].filter((t) => !isNaN(t) && t > 0);
+  // Determine account age from the dedicated first-transaction query.
+  // This is accurate even when the address has >100 txs (the main batch
+  // only fetches the most recent 100 sorted desc, so its min-timestamp
+  // may not be the real first tx).
+  let firstTxTimestamp: number | null = null;
+  if (firstTransaction) {
+    const ts = parseInt(firstTransaction.timeStamp);
+    if (!isNaN(ts) && ts > 0) {
+      firstTxTimestamp = ts;
+    }
+  }
 
-  const firstTxTimestamp = allTimestamps.length > 0 ? Math.min(...allTimestamps) : null;
+  // Fallback: use the oldest timestamp from the fetched batches
+  if (firstTxTimestamp === null) {
+    const allTimestamps = [
+      ...txs.map((tx) => parseInt(tx.timeStamp)),
+      ...internalTxs.map((tx) => parseInt(tx.timeStamp)),
+    ].filter((t) => !isNaN(t) && t > 0);
+    firstTxTimestamp = allTimestamps.length > 0 ? Math.min(...allTimestamps) : null;
+  }
+
   const accountAge = firstTxTimestamp
     ? Math.floor(Date.now() / 1000) - firstTxTimestamp
     : null;
