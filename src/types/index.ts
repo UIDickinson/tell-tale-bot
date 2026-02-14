@@ -97,7 +97,11 @@ export interface ScamFlag {
   reportedAt?: string;
 }
 
-/** Neynar webhook cast event (simplified) */
+/**
+ * Neynar webhook cast event.
+ * Uses the actual Neynar SDK WebhookCastCreated type where possible,
+ * but we keep a local mirror for loose parsing of webhook payloads.
+ */
 export interface NeynarCastEvent {
   type: string;
   data: {
@@ -108,12 +112,13 @@ export interface NeynarCastEvent {
       display_name: string;
     };
     text: string;
-    parent_hash?: string;
+    parent_hash?: string | null;
     mentioned_profiles: Array<{
       fid: number;
       username: string;
     }>;
   };
+  created_at?: number;
 }
 
 /** Config for RPC provider fallback */

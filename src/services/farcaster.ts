@@ -2,11 +2,23 @@
 // Tell-Tale Bot — Farcaster / Neynar Integration Service
 // ============================================================
 
+import crypto from 'crypto';
 import { NeynarAPIClient, Configuration } from '@neynar/nodejs-sdk';
 import { config } from '../config.js';
 
-const neynarConfig = new Configuration({ apiKey: config.neynarApiKey });
-const neynar = new NeynarAPIClient(neynarConfig);
+let neynar: NeynarAPIClient | null = null;
+
+/**
+ * Lazy-initialize Neynar client.
+ * Deferred so the module can be imported without env vars during tests.
+ */
+function getClient(): NeynarAPIClient {
+  if (!neynar) {
+    const neynarConfig = new Configuration({ apiKey: config.neynarApiKey });
+    neynar = new NeynarAPIClient(neynarConfig);
+  }
+  return neynar;
+}
 
 /**
  * Post a reply cast on Farcaster.
@@ -15,7 +27,7 @@ const neynar = new NeynarAPIClient(neynarConfig);
  */
 export async function postReply(text: string, parentHash: string): Promise<void> {
   try {
-    await neynar.publishCast({
+    await getClient().publishCast({
       signerUuid: config.neynarSignerUuid,
       text,
       parent: parentHash,
@@ -32,7 +44,7 @@ export async function postReply(text: string, parentHash: string): Promise<void>
  */
 export async function postCast(text: string): Promise<void> {
   try {
-    await neynar.publishCast({
+    await getClient().publishCast({
       signerUuid: config.neynarSignerUuid,
       text,
     });
@@ -45,6 +57,7 @@ export async function postCast(text: string): Promise<void> {
 
 /**
  * Verify a Neynar webhook signature.
+ * Neynar uses HMAC-SHA512 for webhook signatures.
  */
 export function verifyWebhookSignature(
   body: string,
@@ -55,10 +68,11 @@ export function verifyWebhookSignature(
     return true;
   }
 
-  // Neynar uses HMAC-SHA512 for webhook signatures
-  const crypto = require('crypto');
   const hmac = crypto.createHmac('sha512', config.webhookSecret);
   hmac.update(body);
   const expectedSignature = hmac.digest('hex');
-  return signature === expectedSignature;
+  return crypto.timingSafeEqual(
+    Buffer.from(signature, 'hex'),
+    Buffer.from(expectedSignature, 'hex'),
+  );
 }

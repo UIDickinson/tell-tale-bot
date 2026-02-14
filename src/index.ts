@@ -10,6 +10,8 @@ import { fetchWalletData } from './services/dataFetcher.js';
 import { computeRiskScore } from './services/riskScorer.js';
 import { generateReport, formatForCast } from './services/reportGenerator.js';
 import { postReply, verifyWebhookSignature } from './services/farcaster.js';
+import { seedLocalDb, getLocalDbSize } from './services/scamDb.js';
+import { scamSeedData } from './data/scamSeeds.js';
 import { NeynarCastEvent, WalletReport } from './types/index.js';
 
 // ── Cache & Rate Limiting ──────────────────────────────────
@@ -159,13 +161,29 @@ async function analyzeAndReply(address: string, castHash: string): Promise<void>
   }
 }
 
-// ── Start Server ───────────────────────────────────────────
-app.listen(config.port, () => {
-  console.log(`\n🔍 Tell-Tale Bot v1.0.0`);
-  console.log(`   Listening on port ${config.port}`);
-  console.log(`   Environment: ${config.nodeEnv}`);
-  console.log(`   RPC providers: ${config.rpcProviders.map((p) => p.name).join(', ')}`);
-  console.log(`   Bot FID: ${config.botFid}\n`);
+// ── Startup ────────────────────────────────────────────────
+async function bootstrap(): Promise<void> {
+  // Seed scam database
+  seedLocalDb(scamSeedData);
+  console.log(`[Startup] Scam DB loaded: ${getLocalDbSize()} addresses`);
+
+  // Start HTTP server
+  app.listen(config.port, () => {
+    console.log(`\n🔍 Tell-Tale Bot v1.0.0`);
+    console.log(`   Listening on port ${config.port}`);
+    console.log(`   Environment: ${config.nodeEnv}`);
+    console.log(`   RPC providers: ${config.rpcProviders.map((p) => p.name).join(', ')}`);
+    console.log(`   Bot FID: ${config.botFid}`);
+    console.log(`   Scam DB: ${getLocalDbSize()} addresses`);
+    console.log(`   Webhook: POST /webhook/neynar`);
+    console.log(`   Health: GET /health`);
+    console.log(`   Test: GET /analyze/:address\n`);
+  });
+}
+
+bootstrap().catch((err) => {
+  console.error('[Startup] Fatal error:', err);
+  process.exit(1);
 });
 
 export default app;
