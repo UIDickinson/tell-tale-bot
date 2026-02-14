@@ -1,0 +1,39 @@
+{
+  "name": "tell-tale-bot",
+  "version": "1.0.0",
+  "description": "Autonomous AI agent on Base that analyzes wallet addresses for scam detection and risk scoring",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node --esm src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UIDickinson/tell-tale-bot.git"
+  },
+  "keywords": ["farcaster", "base", "blockchain", "scam-detection", "wallet-analysis", "ai-agent"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/UIDickinson/tell-tale-bot/issues"
+  },
+  "homepage": "https://github.com/UIDickinson/tell-tale-bot#readme",
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.2.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@neynar/nodejs-sdk": "^3.134.0",
+    "axios": "^1.13.5",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "openai": "^6.22.0",
+    "viem": "^2.45.3"
+  }
+}

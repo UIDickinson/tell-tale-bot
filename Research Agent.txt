@@ -1,0 +1,44 @@
+Project Pitch: Base Onchain Scout Agent
+
+Project Name: Tell-Tale Bot
+
+One-Sentence Summary
+An autonomous AI agent built on Base that analyzes any Base wallet address when queried, tagged, or prompted in the Base App — delivering fast, accurate reports on transaction history, connected addresses, potential scam links, risky patterns, or suspicious activities — helping users stay safe in onchain interactions.
+
+
+Problem It Solves
+Crypto users on Base (and across chains) frequently interact with unknown wallets — e.g., before sending funds, trading, or joining a project. Many fall victim to scams like wallet drainers, rug pulls, phishing contracts, or chain-hopping fraud. Manual checks (via explorers like Basescan, Arkham, or Etherscan) are time-consuming and require expertise. Existing tools are often offchain, paid, enterprise-focused, or not seamlessly integrated into the Base App experience. Users need instant, trustworthy insights right where they transact — in the Base App.
+
+
+What the Agent Does (Core Functionality)
+When a user: 
+• Prompts it in chat (e.g., "Analyze wallet 0xabc..."), 
+• Tags it in a Base App post/feed, or 
+• Queries via a dedicated interface/command,
+
+The agent: 
+1. Pulls public onchain data for the provided Base wallet address (via CDP APIs, Basescan/Base explorer APIs, indexed data sources, or any helpful data sources).
+
+2. Analyzes key signals: 
+• Transaction history (volume, frequency, inflows/outflows). 
+• Interactions with other addresses/contracts (e.g., known scam contracts, high-risk deployers, or flagged entities). 
+• Red flags: sudden large transfers, interactions with drainer contracts, rug-pulls , patterns matching common scams (e.g., fake airdrops, phishing approvals), chain-hopping to risky chains. 
+• Connections: Maps linked wallets (e.g., funding sources, clustered behavior). 
+• Risk score: Simple trust/risk rating (e.g., low/medium/high) based on rules + optional AI pattern recognition.
+
+3. Outputs a concise, readable report: 
+• Summary verdict (e.g., "Appears low-risk – no known scam links"). 
+• Key findings with evidence (tx hashes, linked addresses). 
+• Visual graph or list of top interactions (if feasible). 
+• Recommendations (e.g., "Avoid approving this contract").
+
+
+Why Build on Base? 
+• For Base builder programme.
+
+
+Target Users 
+• Everyday Base users (traders, memecoin hunters, DeFi participants). 
+• Newbies checking unknown wallets before interacting. 
+• Communities/projects wanting quick due diligence on contributors/whales. 
+• Potentially: integrated into Base App feeds or as a bot for groups.
