@@ -10,7 +10,7 @@ An autonomous AI agent built on Base that analyzes any Base wallet address on de
 - **AI-generated reports** — GPT-4o summaries grounded in verified onchain data with hallucination guards
 - **Farcaster integration** — responds to @mentions on Base App via Neynar webhooks
 - **Scam database** — local cached DB seeded from Forta/ChainAbuse + real-time ChainAbuse lookups
-- **RPC fallback chain** — automatic rotation: Base Public → Alchemy → Ankr → 1RPC
+- **RPC fallback chain** — automatic rotation: Base Public → PublicNode → Ankr → 1RPC
 - **Caching & rate limiting** — TTL-based result cache, per-user query limits
 - **Legal disclaimers** — every report includes "not financial advice" disclaimer
 
@@ -80,7 +80,6 @@ Edit `.env` with your API keys:
 | `BASESCAN_API_KEY` | ✅ | Basescan API key ([basescan.org](https://basescan.org)) |
 | `WEBHOOK_SECRET` | ⬜ | Neynar webhook HMAC secret |
 | `BASE_RPC_URL` | ⬜ | Custom Base RPC (default: mainnet.base.org) |
-| `ALCHEMY_API_KEY` | ⬜ | Alchemy key for RPC fallback |
 | `PORT` | ⬜ | Server port (default: 3000) |
 
 ### 3. Build & Run

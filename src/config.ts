@@ -45,13 +45,11 @@ export const config = {
       url: optionalEnv('BASE_RPC_URL', 'https://mainnet.base.org'),
       priority: 1,
     },
-    process.env.ALCHEMY_API_KEY
-      ? {
-          name: 'Alchemy',
-          url: `https://base-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
-          priority: 2,
-        }
-      : null,
+    {
+      name: 'PublicNode',
+      url: 'https://base-rpc.publicnode.com',
+      priority: 2,
+    },
     {
       name: 'Ankr',
       url: 'https://rpc.ankr.com/base',

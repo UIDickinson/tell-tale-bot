@@ -167,7 +167,7 @@ Crypto users on Base frequently interact with unknown wallets — before sending
 |---|---|---|
 | **Basescan API** | Transaction history, contract info, internal txs, token transfers | Free tier (5 calls/sec) — API key required |
 | **CDP (Coinbase Developer Platform)** | AgentKit for agent execution, OnchainKit for data, wallet management | CDP API key required |
-| **Base RPC (via viem)** | Direct chain reads — balances, contract calls, block data | Public RPC or Alchemy/Infura endpoint |
+| **Base RPC (via viem)** | Direct chain reads — balances, contract calls, block data | Public RPC endpoints (Base Public, PublicNode, Ankr, 1RPC) |
 | **Known Scam Databases** | Cross-reference addresses against known scam lists | ChainAbuse API, Forta alerts, community-maintained lists |
 | **OpenAI API** | GPT-4o for analysis synthesis and report generation | API key required |
 
@@ -300,7 +300,7 @@ No known scam links detected.
 - **Basescan free tier:** 5 calls/sec, 100k calls/day — primary source for tx history, token transfers, internal txs.
 - **Fallback chain:**
   1. **Public Base RPC:** `https://mainnet.base.org` (rate-limited but free) via `viem`.
-  2. **Alchemy free tier:** 300M compute units/month, enhanced Base support — strong fallback.
+  2. **PublicNode:** `https://base-rpc.publicnode.com` (public Base endpoint, no API key).
   3. **Ankr public RPC:** Free Base endpoint, no API key needed.
   4. **1RPC (Automata):** Privacy-preserving free Base RPC.
 - **Implementation:** RPC provider rotation with automatic failover. Cache aggressively (TTL-based) to minimize API calls.
